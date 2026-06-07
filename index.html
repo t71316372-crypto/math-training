@@ -35,9 +35,10 @@ h1 {
 }
 
 .question {
-  font-size: 48px;
+  font-size: 42px;
   margin: 30px 0;
   font-weight: bold;
+  line-height: 1.35;
 }
 
 input {
@@ -50,9 +51,9 @@ input {
 }
 
 .main-button {
-  font-size: 26px;
-  padding: 14px 32px;
-  margin-top: 20px;
+  font-size: 24px;
+  padding: 12px 28px;
+  margin-top: 16px;
   border-radius: 16px;
   border: none;
   background: #333;
@@ -60,14 +61,15 @@ input {
 }
 
 .result {
-  font-size: 30px;
-  margin: 25px 0;
+  font-size: 28px;
+  margin: 22px 0;
   min-height: 40px;
 }
 
 .score {
   font-size: 18px;
-  margin-top: 20px;
+  margin-top: 16px;
+  line-height: 1.6;
 }
 
 .active {
@@ -78,6 +80,16 @@ input {
 .wrong-list {
   margin-top: 20px;
   font-size: 16px;
+  line-height: 1.7;
+}
+
+.reset-button {
+  font-size: 16px;
+  padding: 8px 18px;
+  margin-top: 16px;
+  border-radius: 12px;
+  border: 1px solid #aaa;
+  background: white;
 }
 </style>
 </head>
@@ -93,11 +105,11 @@ input {
   <button onclick="setMode('mul')" id="mode-mul">かけ算</button>
   <button onclick="setMode('div')" id="mode-div">わり算</button>
   <button onclick="setMode('big')" id="mode-big">大きな数</button>
-<button onclick="setMode('decimal')" id="mode-decimal">小数</button>
-<button onclick="setMode('unit')" id="mode-unit">単位換算</button>
+  <button onclick="setMode('decimal')" id="mode-decimal">小数</button>
+  <button onclick="setMode('unit')" id="mode-unit">単位換算</button>
   <button onclick="setMode('fraction')" id="mode-fraction">分数</button>
-<button onclick="setMode('area')" id="mode-area">面積</button>
-<button onclick="setMode('angle')" id="mode-angle">角度</button>
+  <button onclick="setMode('area')" id="mode-area">面積</button>
+  <button onclick="setMode('angle')" id="mode-angle">角度</button>
   <button onclick="setMode('story')" id="mode-story">文章題</button>
 </div>
 
@@ -115,20 +127,29 @@ input {
 
 <button class="main-button" onclick="checkAnswer()">こたえる</button>
 <br>
-<button class="main-button" onclick="showExplanation()">解説を見る</button>  
+<button class="main-button" onclick="showExplanation()">解説を見る</button>
 
 <div class="result" id="result"></div>
 
 <div class="score">
-  正解：<span id="correct">0</span>　
-  まちがい：<span id="wrong">0</span>　
+  今回の正解：<span id="correct">0</span>　
+  今回のまちがい：<span id="wrong">0</span>　
   連続正解：<span id="streak">0</span>
+</div>
+
+<div class="score">
+  総問題数：<span id="total">0</span>　
+  正答率：<span id="accuracy">0</span>%
 </div>
 
 <button class="main-button" onclick="reviewWrong()">まちがい復習</button>
 
 <div class="wrong-list" id="wrongList"></div>
+<div class="wrong-list" id="weakness"></div>
 <div class="wrong-list" id="explanation"></div>
+
+<button class="reset-button" onclick="resetStats()">記録をリセット</button>
+
 </div>
 
 <script>
@@ -143,7 +164,14 @@ let correctCount = 0;
 let wrongCount = 0;
 let streak = 0;
 
-let wrongProblems = [];
+let wrongProblems =
+  JSON.parse(localStorage.getItem("wrongProblems")) || [];
+
+let totalQuestions =
+  Number(localStorage.getItem("totalQuestions")) || 0;
+
+let totalCorrect =
+  Number(localStorage.getItem("totalCorrect")) || 0;
 
 const modeLabels = {
   add: "たし算",
@@ -153,21 +181,23 @@ const modeLabels = {
   big: "大きな数",
   decimal: "小数",
   unit: "単位換算",
-fraction: "分数",
-area: "面積",
-angle: "角度",
-story: "文章題"
+  fraction: "分数",
+  area: "面積",
+  angle: "角度",
+  story: "文章題"
 };
 
 function setMode(newMode) {
   mode = newMode;
   updateButtons();
+  clearExplanation();
   nextQuestion();
 }
 
 function setLevel(newLevel) {
   level = newLevel;
   updateButtons();
+  clearExplanation();
   nextQuestion();
 }
 
@@ -225,11 +255,11 @@ function nextQuestion() {
   if (mode === "big") createBigNumberQuestion();
   if (mode === "decimal") createDecimalQuestion();
   if (mode === "unit") createUnitQuestion();
-if (mode === "fraction") createFractionQuestion();
-if (mode === "area") createAreaQuestion();
-if (mode === "angle") createAngleQuestion();
+  if (mode === "fraction") createFractionQuestion();
+  if (mode === "area") createAreaQuestion();
+  if (mode === "angle") createAngleQuestion();
   if (mode === "story") createStoryQuestion();
-  
+
   document.getElementById("answer").value = "";
   document.getElementById("answer").focus();
   document.getElementById("result").innerText = "";
@@ -308,6 +338,7 @@ function createDecimalQuestion() {
     showQuestion(`${a} - ${b}`);
   }
 }
+
 function createUnitQuestion() {
   let patterns;
 
@@ -370,48 +401,11 @@ function createUnitQuestion() {
   patterns[rand(patterns.length) - 1]();
 }
 
-function showQuestion(text) {
-  document.getElementById("question").innerText = text;
-}
-
-function checkAnswer() {
-  const input = document.getElementById("answer").value;
-
-  if (input === "") {
-    document.getElementById("result").innerText = "こたえを入れてね";
-    return;
-  }
-
-  const userAnswer = Number(input);
-
-  if (userAnswer === correctAnswer) {
-    playSuccess();
-    correctCount++;
-    streak++;
-
-    document.getElementById("result").innerText =
-      streak >= 3 ? "🔥 れんぞく正解！" : "⭕ せいかい！";
-
-    updateScore();
-    setTimeout(nextQuestion, 800);
-  } else {
-    playFail();
-    wrongCount++;
-    streak = 0;
-
-    wrongProblems.push({
-      mode: modeLabels[mode],
-      question: document.getElementById("question").innerText,
-      answer: correctAnswer
-    });
-
-    document.getElementById("result").innerText = `❌ 答えは ${correctAnswer}`;
-    updateScore();
-    setTimeout(nextQuestion, 1500);
-  }
-}
 function createFractionQuestion() {
-  const denominator = level === 1 ? rand(5) + 1 : level === 2 ? rand(8) + 1 : rand(10) + 2;
+  const denominator =
+    level === 1 ? rand(5) + 1 :
+    level === 2 ? rand(8) + 1 :
+    rand(10) + 2;
 
   let n1 = rand(denominator - 1);
   let n2 = rand(denominator - 1);
@@ -497,7 +491,8 @@ function createAngleQuestion() {
 
   patterns[rand(patterns.length) - 1]();
 }
-  function createStoryQuestion() {
+
+function createStoryQuestion() {
   let patterns;
 
   if (level === 1) {
@@ -551,10 +546,103 @@ function createAngleQuestion() {
 
   patterns[rand(patterns.length) - 1]();
 }
+
+function showQuestion(text) {
+  document.getElementById("question").innerText = text;
+}
+
+function checkAnswer() {
+  const input = document.getElementById("answer").value;
+
+  if (input === "") {
+    document.getElementById("result").innerText = "こたえを入れてね";
+    return;
+  }
+
+  const userAnswer = Number(input);
+
+  totalQuestions++;
+
+  if (userAnswer === correctAnswer) {
+    playSuccess();
+
+    correctCount++;
+    totalCorrect++;
+    streak++;
+
+    document.getElementById("result").innerText =
+      streak >= 3 ? "🔥 れんぞく正解！" : "⭕ せいかい！";
+
+    saveStats();
+    updateScore();
+    setTimeout(nextQuestion, 800);
+  } else {
+    playFail();
+
+    wrongCount++;
+    streak = 0;
+
+    wrongProblems.push({
+      mode: modeLabels[mode],
+      question: document.getElementById("question").innerText,
+      answer: correctAnswer
+    });
+
+    saveStats();
+
+    document.getElementById("result").innerText = `❌ 答えは ${correctAnswer}`;
+    updateScore();
+    setTimeout(nextQuestion, 1500);
+  }
+}
+
 function updateScore() {
   document.getElementById("correct").innerText = correctCount;
   document.getElementById("wrong").innerText = wrongCount;
   document.getElementById("streak").innerText = streak;
+
+  const accuracy =
+    totalQuestions === 0
+      ? 0
+      : Math.round((totalCorrect / totalQuestions) * 100);
+
+  document.getElementById("total").innerText = totalQuestions;
+  document.getElementById("accuracy").innerText = accuracy;
+
+  updateWeakness();
+}
+
+function saveStats() {
+  localStorage.setItem("totalQuestions", totalQuestions);
+  localStorage.setItem("totalCorrect", totalCorrect);
+  localStorage.setItem("wrongProblems", JSON.stringify(wrongProblems));
+}
+
+function updateWeakness() {
+  const weak = {};
+
+  wrongProblems.forEach(p => {
+    if (!weak[p.mode]) {
+      weak[p.mode] = 0;
+    }
+    weak[p.mode]++;
+  });
+
+  const sorted =
+    Object.entries(weak)
+      .sort((a, b) => b[1] - a[1]);
+
+  let html = "<b>苦手ランキング</b><br>";
+
+  if (sorted.length === 0) {
+    html += "まだデータがありません。";
+  } else {
+    sorted.slice(0, 5).forEach(item => {
+      html += `${item[0]}：${item[1]}回<br>`;
+    });
+  }
+
+  document.getElementById("weakness").innerHTML = html;
 }
 
 function reviewWrong() {
@@ -574,11 +662,6 @@ function reviewWrong() {
   list.innerHTML = html;
 }
 
-document.getElementById("answer").addEventListener("keydown", function(e) {
-  if (e.key === "Enter") {
-    checkAnswer();
-  }
-});
 function showExplanation() {
   const exp = document.getElementById("explanation");
 
@@ -633,7 +716,41 @@ function showExplanation() {
 
   exp.innerHTML = explanations[mode] || "このモードの解説はまだありません。";
 }
+
+function clearExplanation() {
+  document.getElementById("explanation").innerHTML = "";
+}
+
+function resetStats() {
+  if (!confirm("記録をリセットしますか？")) {
+    return;
+  }
+
+  totalQuestions = 0;
+  totalCorrect = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  streak = 0;
+  wrongProblems = [];
+
+  localStorage.removeItem("totalQuestions");
+  localStorage.removeItem("totalCorrect");
+  localStorage.removeItem("wrongProblems");
+
+  document.getElementById("wrongList").innerHTML = "";
+  document.getElementById("explanation").innerHTML = "";
+
+  updateScore();
+}
+
+document.getElementById("answer").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    checkAnswer();
+  }
+});
+
 updateButtons();
+updateScore();
 nextQuestion();
 </script>
 

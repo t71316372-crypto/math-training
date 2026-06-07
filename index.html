@@ -239,7 +239,15 @@ function checkAnswer() {
     setTimeout(nextQuestion, 1500);
   }
 }
+const ctx = new AudioContext();
+const osc = ctx.createOscillator();
 
+osc.frequency.value = 880;
+osc.connect(ctx.destination);
+
+osc.start();
+osc.stop(ctx.currentTime + 0.15);
+  
 function updateScore() {
   document.getElementById("correct").innerText = correctCount;
   document.getElementById("wrong").innerText = wrongCount;

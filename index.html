@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>さんすうトレーニング</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background: #f7f7f7;
+  text-align: center;
+}
+
+.app {
+  max-width: 480px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+.mode button,
+.level button {
+  font-size: 18px;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  background: white;
+}
+
+.question {
+  font-size: 48px;
+  margin: 30px 0;
+  font-weight: bold;
+}
+
+input {
+  font-size: 36px;
+  width: 160px;
+  text-align: center;
+  padding: 8px;
+  border-radius: 12px;
+  border: 2px solid #aaa;
+}
+
+.main-button {
+  font-size: 26px;
+  padding: 14px 32px;
+  margin-top: 20px;
+  border-radius: 16px;
+  border: none;
+  background: #333;
+  color: white;
+}
+
+.result {
+  font-size: 30px;
+  margin: 25px 0;
+  min-height: 40px;
+}
+
+.score {
+  font-size: 18px;
+  margin-top: 20px;
+}
+
+.active {
+  background: #333 !important;
+  color: white;
+}
+
+.wrong-list {
+  margin-top: 20px;
+  font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<h1>さんすうトレーニング</h1>
+
+<div class="mode">
+  <button onclick="setMode('add')" id="mode-add">たし算</button>
+  <button onclick="setMode('sub')" id="mode-sub">ひき算</button>
+  <button onclick="setMode('mul')" id="mode-mul">かけ算</button>
+  <button onclick="setMode('div')" id="mode-div">わり算</button>
+</div>
+
+<div class="level">
+  <button onclick="setLevel(1)" id="level-1">かんたん</button>
+  <button onclick="setLevel(2)" id="level-2">ふつう</button>
+  <button onclick="setLevel(3)" id="level-3">むずかしい</button>
+</div>
+
+<div class="question" id="question">?</div>
+
+<input id="answer" type="number" inputmode="numeric">
+
+<br>
+
+<button class="main-button" onclick="checkAnswer()">こたえる</button>
+
+<div class="result" id="result"></div>
+
+<div class="score">
+  正解：<span id="correct">0</span>　
+  まちがい：<span id="wrong">0</span>　
+  連続正解：<span id="streak">0</span>
+</div>
+
+<button class="main-button" onclick="reviewWrong()">まちがい復習</button>
+
+<div class="wrong-list" id="wrongList"></div>
+
+</div>
+
+<script>
+let mode = "mul";
+let level = 1;
+
+let a = 0;
+let b = 0;
+let correctAnswer = 0;
+
+let correctCount = 0;
+let wrongCount = 0;
+let streak = 0;
+
+let wrongProblems = [];
+
+function setMode(newMode) {
+  mode = newMode;
+  updateButtons();
+  nextQuestion();
+}
+
+function setLevel(newLevel) {
+  level = newLevel;
+  updateButtons();
+  nextQuestion();
+}
+
+function updateButtons() {
+  document.querySelectorAll(".mode button").forEach(btn => btn.classList.remove("active"));
+  document.querySelectorAll(".level button").forEach(btn => btn.classList.remove("active"));
+
+  document.getElementById("mode-" + mode).classList.add("active");
+  document.getElementById("level-" + level).classList.add("active");
+}
+
+function maxNumber() {
+  if (level === 1) return 9;
+  if (level === 2) return 30;
+  return 99;
+}
+
+function rand(n) {
+  return Math.floor(Math.random() * n) + 1;
+}
+
+function nextQuestion() {
+  const max = maxNumber();
+
+  if (mode === "add") {
+    a = rand(max);
+    b = rand(max);
+    correctAnswer = a + b;
+    showQuestion(`${a} + ${b}`);
+  }
+
+  if (mode === "sub") {
+    a = rand(max);
+    b = rand(max);
+    if (b > a) {
+      let temp = a;
+      a = b;
+      b = temp;
+    }
+    correctAnswer = a - b;
+    showQuestion(`${a} - ${b}`);
+  }
+
+  if (mode === "mul") {
+    a = rand(level === 1 ? 9 : 12);
+    b = rand(level === 1 ? 9 : 12);
+    correctAnswer = a * b;
+    showQuestion(`${a} × ${b}`);
+  }
+
+  if (mode === "div") {
+    b = rand(level === 1 ? 9 : 12);
+    correctAnswer = rand(level === 1 ? 9 : 12);
+    a = b * correctAnswer;
+    showQuestion(`${a} ÷ ${b}`);
+  }
+
+  document.getElementById("answer").value = "";
+  document.getElementById("answer").focus();
+}
+
+function showQuestion(text) {
+  document.getElementById("question").innerText = text;
+  document.getElementById("result").innerText = "";
+}
+
+function checkAnswer() {
+  const userAnswer = Number(document.getElementById("answer").value);
+
+  if (document.getElementById("answer").value === "") {
+    document.getElementById("result").innerText = "こたえを入れてね";
+    return;
+  }
+
+  if (userAnswer === correctAnswer) {
+    correctCount++;
+    streak++;
+    document.getElementById("result").innerText = streak >= 3 ? "🔥 れんぞく正解！" : "⭕ せいかい！";
+    updateScore();
+    setTimeout(nextQuestion, 800);
+  } else {
+    wrongCount++;
+    streak = 0;
+
+    wrongProblems.push({
+      question: document.getElementById("question").innerText,
+      answer: correctAnswer
+    });
+
+    document.getElementById("result").innerText = `❌ ちがう。答えは ${correctAnswer}`;
+    updateScore();
+    setTimeout(nextQuestion, 1500);
+  }
+}
+
+function updateScore() {
+  document.getElementById("correct").innerText = correctCount;
+  document.getElementById("wrong").innerText = wrongCount;
+  document.getElementById("streak").innerText = streak;
+}
+
+function reviewWrong() {
+  const list = document.getElementById("wrongList");
+
+  if (wrongProblems.length === 0) {
+    list.innerHTML = "まちがえた問題はまだありません。";
+    return;
+  }
+
+  let html = "<b>まちがえた問題</b><br>";
+
+  wrongProblems.slice(-5).forEach(p => {
+    html += `${p.question} = ${p.answer}<br>`;
+  });
+
+  list.innerHTML = html;
+}
+
+document.getElementById("answer").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    checkAnswer();
+  }
+});
+
+updateButtons();
+nextQuestion();
+</script>
+
+</body>
+</html>

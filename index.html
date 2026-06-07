@@ -210,7 +210,26 @@ function showQuestion(text) {
   document.getElementById("question").innerText = text;
   document.getElementById("result").innerText = "";
 }
+function playSuccess() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.frequency.value = 880;
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    ctx.currentTime + 0.15
+  );
+
+  osc.start();
+  osc.stop(ctx.currentTime + 0.15);
+}
 function checkAnswer() {
   const userAnswer = Number(document.getElementById("answer").value);
 
@@ -220,6 +239,14 @@ function checkAnswer() {
   }
 
   if (userAnswer === correctAnswer) {
+    const ctx = new AudioContext();
+const osc = ctx.createOscillator();
+
+osc.frequency.value = 880;
+osc.connect(ctx.destination);
+
+osc.start();
+osc.stop(ctx.currentTime + 0.15);
     correctCount++;
     streak++;
     document.getElementById("result").innerText = streak >= 3 ? "🔥 れんぞく正解！" : "⭕ せいかい！";
@@ -239,14 +266,31 @@ function checkAnswer() {
     setTimeout(nextQuestion, 1500);
   }
 }
-const ctx = new AudioContext();
-const osc = ctx.createOscillator();
+function playFail() {
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-osc.frequency.value = 880;
-osc.connect(ctx.destination);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
 
-osc.start();
-osc.stop(ctx.currentTime + 0.15);
+  osc.frequency.value = 220;
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  gain.gain.setValueAtTime(0.2, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(
+    0.001,
+    ctx.currentTime + 0.3
+  );
+
+  osc.start();
+  osc.stop(ctx.currentTime + 0.3);
+}
+  } else {
+
+  playFail(); // ←追加
+
+  wrongCount++;
   
 function updateScore() {
   document.getElementById("correct").innerText = correctCount;

@@ -238,21 +238,15 @@ function checkAnswer() {
     return;
   }
 
-  if (userAnswer === correctAnswer) {
-    const ctx = new AudioContext();
-const osc = ctx.createOscillator();
-
-osc.frequency.value = 880;
-osc.connect(ctx.destination);
-
-osc.start();
-osc.stop(ctx.currentTime + 0.15);
+ if (userAnswer === correctAnswer) {
+    playSuccess();
     correctCount++;
     streak++;
     document.getElementById("result").innerText = streak >= 3 ? "🔥 れんぞく正解！" : "⭕ せいかい！";
     updateScore();
     setTimeout(nextQuestion, 800);
   } else {
+       playFail();
     wrongCount++;
     streak = 0;
 
@@ -286,11 +280,7 @@ function playFail() {
   osc.start();
   osc.stop(ctx.currentTime + 0.3);
 }
-  } else {
 
-  playFail(); // ←追加
-
-  wrongCount++;
   
 function updateScore() {
   document.getElementById("correct").innerText = correctCount;

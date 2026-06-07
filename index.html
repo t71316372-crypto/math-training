@@ -114,6 +114,8 @@ input {
 <br>
 
 <button class="main-button" onclick="checkAnswer()">こたえる</button>
+<br>
+<button class="main-button" onclick="showExplanation()">解説を見る</button>  
 
 <div class="result" id="result"></div>
 
@@ -126,7 +128,7 @@ input {
 <button class="main-button" onclick="reviewWrong()">まちがい復習</button>
 
 <div class="wrong-list" id="wrongList"></div>
-
+<div class="wrong-list" id="explanation"></div>
 </div>
 
 <script>
@@ -467,7 +469,60 @@ document.getElementById("answer").addEventListener("keydown", function(e) {
     checkAnswer();
   }
 });
+function showExplanation() {
+  const exp = document.getElementById("explanation");
 
+  const explanations = {
+    decimal: `
+      <b>小数の考え方</b><br>
+      小数は、1より小さい数や、細かい量を表す数です。<br>
+      0.1は「10分の1」です。<br>
+      計算するときは、小数点の位置をそろえることが大切です。
+    `,
+
+    fraction: `
+      <b>分数の考え方</b><br>
+      分数は、1つのものを同じ大きさに分けた数です。<br>
+      1/3は「3つに分けたうちの1つ」です。<br>
+      分母が同じときは、分子だけをたしたりひいたりします。
+    `,
+
+    unit: `
+      <b>単位換算の考え方</b><br>
+      単位を変えるときは、何倍になるかを考えます。<br>
+      1m = 100cm<br>
+      1kg = 1000g<br>
+      1L = 1000mL
+    `,
+
+    area: `
+      <b>面積の考え方</b><br>
+      面積は、広さを表します。<br>
+      長方形の面積は、たて × よこ です。<br>
+      たて5cm、よこ8cmなら、5 × 8 = 40㎠ です。
+    `,
+
+    angle: `
+      <b>角度の考え方</b><br>
+      角度は、開きぐあいを表します。<br>
+      直角は90°です。<br>
+      一直線は180°です。<br>
+      90°や180°から引いて考える問題がよく出ます。
+    `,
+
+    story: `
+      <b>文章題の考え方</b><br>
+      文章題では、まず「何を聞かれているか」を見ます。<br>
+      次に、使う数字を探します。<br>
+      最後に、たし算・ひき算・かけ算・わり算のどれを使うか考えます。<br><br>
+      同じ数ずつ分ける → わり算<br>
+      何こ分・何日分 → かけ算<br>
+      残り → ひき算
+    `
+  };
+
+  exp.innerHTML = explanations[mode] || "このモードの解説はまだありません。";
+}
 updateButtons();
 nextQuestion();
 </script>

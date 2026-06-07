@@ -270,52 +270,103 @@ function createDivQuestion() {
 function createBigNumberQuestion() {
   const patterns = [
     () => {
-      a = rand(9) * 10000;
-      b = rand(9) * 1000;
+      const unit = level === 1 ? 1000 : level === 2 ? 10000 : 100000;
+      a = rand(9) * unit;
+      b = rand(9) * unit;
       correctAnswer = a + b;
       showQuestion(`${a} + ${b}`);
     },
     () => {
-      a = rand(9) * 100000;
+      const unit = level === 1 ? 10000 : level === 2 ? 100000 : 1000000;
+      a = rand(9) * unit;
       correctAnswer = a / 10000;
       showQuestion(`${a} は何万？`);
     }
   ];
+
   patterns[rand(patterns.length) - 1]();
 }
 
 function createDecimalQuestion() {
-  a = rand(30) / 10;
-  b = rand(30) / 10;
+  if (level === 1) {
+    a = rand(30) / 10;
+    b = rand(30) / 10;
+  } else if (level === 2) {
+    a = rand(300) / 100;
+    b = rand(300) / 100;
+  } else {
+    a = rand(3000) / 100;
+    b = rand(3000) / 100;
+  }
 
   if (Math.random() < 0.5) {
-    correctAnswer = Number((a + b).toFixed(1));
+    correctAnswer = Number((a + b).toFixed(2));
     showQuestion(`${a} + ${b}`);
   } else {
     if (b > a) [a, b] = [b, a];
-    correctAnswer = Number((a - b).toFixed(1));
+    correctAnswer = Number((a - b).toFixed(2));
     showQuestion(`${a} - ${b}`);
   }
 }
-
 function createUnitQuestion() {
-  const patterns = [
-    () => {
-      a = rand(9);
-      correctAnswer = a * 100;
-      showQuestion(`${a}m は何cm？`);
-    },
-    () => {
-      a = rand(9);
-      correctAnswer = a * 1000;
-      showQuestion(`${a}kg は何g？`);
-    },
-    () => {
-      a = rand(9);
-      correctAnswer = a * 1000;
-      showQuestion(`${a}L は何mL？`);
-    }
-  ];
+  let patterns;
+
+  if (level === 1) {
+    patterns = [
+      () => {
+        a = rand(9);
+        correctAnswer = a * 100;
+        showQuestion(`${a}m は何cm？`);
+      },
+      () => {
+        a = rand(9);
+        correctAnswer = a * 1000;
+        showQuestion(`${a}kg は何g？`);
+      },
+      () => {
+        a = rand(9);
+        correctAnswer = a * 1000;
+        showQuestion(`${a}L は何mL？`);
+      }
+    ];
+  } else if (level === 2) {
+    patterns = [
+      () => {
+        a = rand(9) * 100;
+        correctAnswer = a / 100;
+        showQuestion(`${a}cm は何m？`);
+      },
+      () => {
+        a = rand(9) * 1000;
+        correctAnswer = a / 1000;
+        showQuestion(`${a}g は何kg？`);
+      },
+      () => {
+        a = rand(9) * 1000;
+        correctAnswer = a / 1000;
+        showQuestion(`${a}mL は何L？`);
+      }
+    ];
+  } else {
+    patterns = [
+      () => {
+        a = rand(30) / 10;
+        correctAnswer = a * 100;
+        showQuestion(`${a}m は何cm？`);
+      },
+      () => {
+        a = rand(30) / 10;
+        correctAnswer = a * 1000;
+        showQuestion(`${a}kg は何g？`);
+      },
+      () => {
+        a = rand(30) / 10;
+        correctAnswer = a * 1000;
+        showQuestion(`${a}L は何mL？`);
+      }
+    ];
+  }
+
   patterns[rand(patterns.length) - 1]();
 }
 
@@ -360,84 +411,143 @@ function checkAnswer() {
   }
 }
 function createFractionQuestion() {
-  const denominator = rand(8) + 1; // 2〜9
+  const denominator = level === 1 ? rand(5) + 1 : level === 2 ? rand(8) + 1 : rand(10) + 2;
+
   let n1 = rand(denominator - 1);
   let n2 = rand(denominator - 1);
 
-  if (Math.random() < 0.5) {
-    correctAnswer = n1 + n2;
-    showQuestion(`${n1}/${denominator} + ${n2}/${denominator} = □/${denominator}`);
+  if (level <= 2) {
+    if (Math.random() < 0.5) {
+      correctAnswer = n1 + n2;
+      showQuestion(`${n1}/${denominator} + ${n2}/${denominator} = □/${denominator}`);
+    } else {
+      if (n2 > n1) [n1, n2] = [n2, n1];
+      correctAnswer = n1 - n2;
+      showQuestion(`${n1}/${denominator} - ${n2}/${denominator} = □/${denominator}`);
+    }
   } else {
-    if (n2 > n1) [n1, n2] = [n2, n1];
-    correctAnswer = n1 - n2;
-    showQuestion(`${n1}/${denominator} - ${n2}/${denominator} = □/${denominator}`);
+    const whole = rand(3);
+    correctAnswer = whole * denominator + n1 + n2;
+    showQuestion(`${whole}と${n1}/${denominator} + ${n2}/${denominator} = □/${denominator}`);
   }
 }
 
 function createAreaQuestion() {
-  const width = rand(level === 1 ? 9 : 20);
-  const height = rand(level === 1 ? 9 : 20);
-
-  correctAnswer = width * height;
-  showQuestion(`たて${height}cm よこ${width}cm の面積`);
+  if (level === 1) {
+    const width = rand(9);
+    const height = rand(9);
+    correctAnswer = width * height;
+    showQuestion(`たて${height}cm よこ${width}cm の面積`);
+  } else if (level === 2) {
+    const width = rand(20);
+    const height = rand(20);
+    correctAnswer = width * height;
+    showQuestion(`たて${height}cm よこ${width}cm の面積`);
+  } else {
+    const width = rand(30);
+    const height = rand(30);
+    correctAnswer = width * height;
+    showQuestion(`たて${height}m よこ${width}m の面積`);
+  }
 }
 
 function createAngleQuestion() {
-  const patterns = [
-    () => {
-      correctAnswer = 90;
-      showQuestion("直角は何度？");
-    },
-    () => {
-      correctAnswer = 180;
-      showQuestion("一直線の角度は何度？");
-    },
-    () => {
-      const x = rand(8) * 10;
-      correctAnswer = 180 - x;
-      showQuestion(`180° - ${x}°`);
-    },
-    () => {
-      const x = rand(8) * 10;
-      correctAnswer = 90 - x;
-      showQuestion(`90° - ${x}°`);
-    }
-  ];
+  let patterns;
+
+  if (level === 1) {
+    patterns = [
+      () => {
+        correctAnswer = 90;
+        showQuestion("直角は何度？");
+      },
+      () => {
+        correctAnswer = 180;
+        showQuestion("一直線の角度は何度？");
+      }
+    ];
+  } else if (level === 2) {
+    patterns = [
+      () => {
+        const x = rand(8) * 10;
+        correctAnswer = 180 - x;
+        showQuestion(`180° - ${x}°`);
+      },
+      () => {
+        const x = rand(8) * 10;
+        correctAnswer = 90 - x;
+        showQuestion(`90° - ${x}°`);
+      }
+    ];
+  } else {
+    patterns = [
+      () => {
+        const x = rand(12) * 10;
+        const y = rand(6) * 10;
+        correctAnswer = 180 - x - y;
+        showQuestion(`180° - ${x}° - ${y}°`);
+      },
+      () => {
+        const x = rand(6) * 10;
+        const y = rand(3) * 10;
+        correctAnswer = 90 - x - y;
+        showQuestion(`90° - ${x}° - ${y}°`);
+      }
+    ];
+  }
 
   patterns[rand(patterns.length) - 1]();
 }
   function createStoryQuestion() {
-  const patterns = [
-    () => {
-      const apples = rand(9) * 4;
-      const people = 4;
-      correctAnswer = apples / people;
-      showQuestion(`りんごが${apples}こあります。${people}人で同じ数ずつ分けると、1人何こ？`);
-    },
-    () => {
-      const price = rand(9) * 100;
-      const count = rand(5);
-      correctAnswer = price * count;
-      showQuestion(`${price}円のノートを${count}さつ買います。代金はいくら？`);
-    },
-    () => {
-      const pages = rand(9) * 10;
-      const days = rand(5);
-      correctAnswer = pages * days;
-      showQuestion(`1日に${pages}ページ読みます。${days}日で何ページ読む？`);
-    },
-    () => {
-      const total = rand(9) * 100;
-      const used = rand(8) * 50;
-      correctAnswer = total - used;
-      if (correctAnswer < 0) {
-        correctAnswer = total;
-        showQuestion(`${total}円持っています。何円持っていますか？`);
-      } else {
-        showQuestion(`${total}円持っています。${used}円使うと、残りはいくら？`);
+  let patterns;
+
+  if (level === 1) {
+    patterns = [
+      () => {
+        const apples = rand(9) * 4;
+        const people = 4;
+        correctAnswer = apples / people;
+        showQuestion(`りんごが${apples}こあります。${people}人で同じ数ずつ分けると、1人何こ？`);
+      },
+      () => {
+        const price = rand(9) * 100;
+        const count = rand(5);
+        correctAnswer = price * count;
+        showQuestion(`${price}円のノートを${count}さつ買います。代金はいくら？`);
       }
-    }
-  ];
+    ];
+  } else if (level === 2) {
+    patterns = [
+      () => {
+        const price = rand(5) * 100;
+        const count = rand(5);
+        const paid = 1000;
+        correctAnswer = paid - price * count;
+        showQuestion(`${price}円のノートを${count}さつ買い、1000円出しました。おつりはいくら？`);
+      },
+      () => {
+        const perDay = rand(9) * 10;
+        const days = rand(5);
+        correctAnswer = perDay * days;
+        showQuestion(`1日に${perDay}ページ読みます。${days}日で何ページ読む？`);
+      }
+    ];
+  } else {
+    patterns = [
+      () => {
+        const people = rand(9) * 4;
+        const capacity = 4;
+        correctAnswer = Math.ceil(people / capacity);
+        showQuestion(`${people}人います。1台に${capacity}人乗れます。車は何台必要？`);
+      },
+      () => {
+        const price = rand(9) * 80;
+        const count = rand(6);
+        const paid = 2000;
+        correctAnswer = paid - price * count;
+        showQuestion(`${price}円の商品を${count}こ買い、2000円出しました。おつりはいくら？`);
+      }
+    ];
+  }
 
   patterns[rand(patterns.length) - 1]();
 }

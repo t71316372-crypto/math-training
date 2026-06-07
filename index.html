@@ -98,6 +98,7 @@ input {
   <button onclick="setMode('fraction')" id="mode-fraction">分数</button>
 <button onclick="setMode('area')" id="mode-area">面積</button>
 <button onclick="setMode('angle')" id="mode-angle">角度</button>
+  <button onclick="setMode('story')" id="mode-story">文章題</button>
 </div>
 
 <div class="level">
@@ -152,7 +153,8 @@ const modeLabels = {
   unit: "単位換算",
 fraction: "分数",
 area: "面積",
-angle: "角度"
+angle: "角度",
+story: "文章題"
 };
 
 function setMode(newMode) {
@@ -224,6 +226,7 @@ function nextQuestion() {
 if (mode === "fraction") createFractionQuestion();
 if (mode === "area") createAreaQuestion();
 if (mode === "angle") createAngleQuestion();
+  if (mode === "story") createStoryQuestion();
   
   document.getElementById("answer").value = "";
   document.getElementById("answer").focus();
@@ -396,6 +399,41 @@ function createAngleQuestion() {
       const x = rand(8) * 10;
       correctAnswer = 90 - x;
       showQuestion(`90° - ${x}°`);
+    }
+  ];
+
+  patterns[rand(patterns.length) - 1]();
+}
+  function createStoryQuestion() {
+  const patterns = [
+    () => {
+      const apples = rand(9) * 4;
+      const people = 4;
+      correctAnswer = apples / people;
+      showQuestion(`りんごが${apples}こあります。${people}人で同じ数ずつ分けると、1人何こ？`);
+    },
+    () => {
+      const price = rand(9) * 100;
+      const count = rand(5);
+      correctAnswer = price * count;
+      showQuestion(`${price}円のノートを${count}さつ買います。代金はいくら？`);
+    },
+    () => {
+      const pages = rand(9) * 10;
+      const days = rand(5);
+      correctAnswer = pages * days;
+      showQuestion(`1日に${pages}ページ読みます。${days}日で何ページ読む？`);
+    },
+    () => {
+      const total = rand(9) * 100;
+      const used = rand(8) * 50;
+      correctAnswer = total - used;
+      if (correctAnswer < 0) {
+        correctAnswer = total;
+        showQuestion(`${total}円持っています。何円持っていますか？`);
+      } else {
+        showQuestion(`${total}円持っています。${used}円使うと、残りはいくら？`);
+      }
     }
   ];
 

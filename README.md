@@ -1,1 +1,1 @@
-# matt-training
+# math-training

@@ -95,6 +95,9 @@ input {
   <button onclick="setMode('big')" id="mode-big">大きな数</button>
 <button onclick="setMode('decimal')" id="mode-decimal">小数</button>
 <button onclick="setMode('unit')" id="mode-unit">単位換算</button>
+  <button onclick="setMode('fraction')" id="mode-fraction">分数</button>
+<button onclick="setMode('area')" id="mode-area">面積</button>
+<button onclick="setMode('angle')" id="mode-angle">角度</button>
 </div>
 
 <div class="level">
@@ -146,7 +149,10 @@ const modeLabels = {
   div: "わり算",
   big: "大きな数",
   decimal: "小数",
-  unit: "単位換算"
+  unit: "単位換算",
+fraction: "分数",
+area: "面積",
+angle: "角度"
 };
 
 function setMode(newMode) {
@@ -215,7 +221,10 @@ function nextQuestion() {
   if (mode === "big") createBigNumberQuestion();
   if (mode === "decimal") createDecimalQuestion();
   if (mode === "unit") createUnitQuestion();
-
+if (mode === "fraction") createFractionQuestion();
+if (mode === "area") createAreaQuestion();
+if (mode === "angle") createAngleQuestion();
+  
   document.getElementById("answer").value = "";
   document.getElementById("answer").focus();
   document.getElementById("result").innerText = "";
@@ -345,7 +354,53 @@ function checkAnswer() {
     setTimeout(nextQuestion, 1500);
   }
 }
+function createFractionQuestion() {
+  const denominator = rand(8) + 1; // 2〜9
+  let n1 = rand(denominator - 1);
+  let n2 = rand(denominator - 1);
 
+  if (Math.random() < 0.5) {
+    correctAnswer = n1 + n2;
+    showQuestion(`${n1}/${denominator} + ${n2}/${denominator} = □/${denominator}`);
+  } else {
+    if (n2 > n1) [n1, n2] = [n2, n1];
+    correctAnswer = n1 - n2;
+    showQuestion(`${n1}/${denominator} - ${n2}/${denominator} = □/${denominator}`);
+  }
+}
+
+function createAreaQuestion() {
+  const width = rand(level === 1 ? 9 : 20);
+  const height = rand(level === 1 ? 9 : 20);
+
+  correctAnswer = width * height;
+  showQuestion(`たて${height}cm よこ${width}cm の面積`);
+}
+
+function createAngleQuestion() {
+  const patterns = [
+    () => {
+      correctAnswer = 90;
+      showQuestion("直角は何度？");
+    },
+    () => {
+      correctAnswer = 180;
+      showQuestion("一直線の角度は何度？");
+    },
+    () => {
+      const x = rand(8) * 10;
+      correctAnswer = 180 - x;
+      showQuestion(`180° - ${x}°`);
+    },
+    () => {
+      const x = rand(8) * 10;
+      correctAnswer = 90 - x;
+      showQuestion(`90° - ${x}°`);
+    }
+  ];
+
+  patterns[rand(patterns.length) - 1]();
+}
 function updateScore() {
   document.getElementById("correct").innerText = correctCount;
   document.getElementById("wrong").innerText = wrongCount;
